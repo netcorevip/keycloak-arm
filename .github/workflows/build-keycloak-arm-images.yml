@@ -1,8 +1,12 @@
 name: Build Docker Image for ARM64 on Ubuntu 24.04
 
+# on:
+#   push:
+#     branches: [main]
+#   workflow_dispatch:
+
+# 手动执行
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
