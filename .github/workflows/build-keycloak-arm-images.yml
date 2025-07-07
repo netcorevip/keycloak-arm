@@ -17,6 +17,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Git credentials
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
+
       - name: Create providers directory
         run: mkdir -p arm/providers
 
@@ -57,3 +61,17 @@ jobs:
           platforms: linux/arm64
           provenance: false # 可选：关闭 SBOM 生成，加快构建
 
+      - name: Commit and push tag_version.txt to Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@github.com"
+
+          git pull origin main
+          git add arm/tag_version.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update ARM image tag version on $(date '+%Y-%m-%d %H:%M:%S')"
+            git push origin main
+          fi
