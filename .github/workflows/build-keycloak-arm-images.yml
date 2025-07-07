@@ -1,4 +1,4 @@
-name: Build Docker Image for ARM64 on Ubuntu 24.04
+name: Build keycloak ARM64 Images
 
 # on:
 #   push:
@@ -72,6 +72,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "Update ARM image tag version on $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "Update ARM image tag on $(date '+%Y-%m-%d %H:%M:%S')"
             git push origin main
           fi
