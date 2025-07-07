@@ -49,7 +49,8 @@ jobs:
           DATE=$(date +'%Y.%m.%d')
           # GIT_SHA=$(git rev-parse --short=40 HEAD)
           GIT_SHA=277707126815f84f1058a08518d94398d2e00674
-          echo "tag=registry-c.cmft.com/cmhk-code-asst-di/keycloak:${DATE}-arm64-${GIT_SHA}-custom-sso" >> $GITHUB_OUTPUT
+          TAG="registry-c.cmft.com/cmhk-code-asst-di/keycloak:${DATE}-arm64-${GIT_SHA}-custom-sso"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Build and push ARM64 Docker image
         uses: docker/build-push-action@v5
@@ -60,6 +61,10 @@ jobs:
           tags: ${{ steps.set_image_tag.outputs.tag }}
           platforms: linux/arm64
           provenance: false # 可选：关闭 SBOM 生成，加快构建
+
+      - name: Write tag to arm/tag_version.txt
+        run: |
+          echo "${{ steps.set_image_tag.outputs.tag }}" >> arm/tag_version.txt
 
       - name: Commit and push tag_version.txt to Git
         run: |
