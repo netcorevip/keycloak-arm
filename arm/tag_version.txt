@@ -1,0 +1,2 @@
+--DI: registry-c.cmft.com/cmhk-code-asst-di/keycloak:20250708-092109-arm64-custom-sso
+PROD: registry-c.cmft.com/cmhk-ai-code-asst/keycloak:20250708-092109-arm64-custom-sso
