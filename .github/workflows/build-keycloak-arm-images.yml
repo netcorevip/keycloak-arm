@@ -49,9 +49,9 @@ jobs:
         id: set_image_tag
         run: |
           DATE=$(date +'%Y.%m.%d')
-          # GIT_SHA=$(git rev-parse --short=40 HEAD)
+          # GIT_SHA=$(git rev-parse --short=40 HEAD)    ${GIT_SHA}-
           GIT_SHA=277707126815f84f1058a08518d94398d2e00674
-          TAG="registry-c.cmft.com/cmhk-code-asst-di/keycloak:${DATE}-arm64-${GIT_SHA}-custom-sso"
+          TAG="registry-c.cmft.com/cmhk-code-asst-di/keycloak:${DATE}-arm64-custom-sso"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Build and push ARM64 Docker image
