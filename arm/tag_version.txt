@@ -1,4 +1,0 @@
-
-registry-c.cmft.com/cmhk-code-asst-di/keycloak:2025.07.07-arm64-277707126815f84f1058a08518d94398d2e00674-custom-sso
-registry-c.cmft.com/cmhk-code-asst-di/keycloak:2025.07.08-arm64-custom-sso
-registry-c.cmft.com/cmhk-code-asst-di/keycloak:20250708-072752-arm64-custom-sso
