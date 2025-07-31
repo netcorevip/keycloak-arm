@@ -30,6 +30,12 @@ jobs:
         run: |
           curl -L -o arm/providers/keycloak-copilot-provider-custom.jar https://temp-1252238228.cos.ap-beijing.myqcloud.com/build/keycloak-copilot-provider-custom.jar
 
+      - name: Generate MD5 and timestamp
+        run: |
+          md5=$(md5sum arm/providers/keycloak-copilot-provider-custom.jar | awk '{ print $1 }')
+          timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+          echo "$md5  $timestamp" > arm/md5_version.txt
+
       - name: Set up QEMU (for ARM64 emulation)
         uses: docker/setup-qemu-action@v3
         with:
@@ -98,13 +104,14 @@ jobs:
           echo "--DI: ${{ steps.set_di_image_name.outputs.image_name }}" >> arm/tag_version.txt
           echo "PROD: ${{ steps.set_prod_image_name.outputs.image_name }}" >> arm/tag_version.txt
 
-      - name: Commit and push tag_version.txt to Git
+      - name: Commit and push *_version.txt to Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git pull origin main
           git add arm/tag_version.txt
+          git add arm/md5_version.txt
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
