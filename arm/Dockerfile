@@ -1,4 +1,4 @@
-FROM show-how-docker.pkg.coding.net/huanghenongshang/bookinfo/keycloak:2025.04.22-arm64-277707126815f84f1058a08518d94398d2e00674
+FROM ai-copilot.tencentcloudcr.com/ai-copilot/keycloak:e8799eb8a9a29961602b37c7723f067983188933-arm
 
 COPY providers/keycloak-copilot-provider-custom.jar /opt/keycloak/providers/keycloak-copilot-provider-custom.jar
 
