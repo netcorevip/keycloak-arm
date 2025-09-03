@@ -1,0 +1,96 @@
+name: tencentyun Build keycloak ARM64 Images
+
+# 手动执行
+on:
+  workflow_dispatch:
+
+jobs:
+  build-arm64-docker-di:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Create providers directory
+        run: mkdir -p arm/providers
+
+      - name: Download .jar file
+        run: |
+          curl -L -o arm/providers/keycloak-copilot-provider-custom.jar https://temp-1252238228.cos.ap-beijing.myqcloud.com/build/keycloak-copilot-provider-custom.jar
+
+      - name: Generate MD5 and timestamp
+        run: |
+          md5=$(md5sum arm/providers/keycloak-copilot-provider-custom.jar | awk '{ print $1 }')
+          timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+          echo "$md5  $timestamp" > arm/md5_version_di.txt
+
+      - name: Set up QEMU (for ARM64 emulation)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set image tag
+        id: set_image_tag
+        run: |
+          DATE=$(date +'%Y%m%d-%H%M%S')
+          # GIT_SHA=$(git rev-parse --short=40 HEAD)    ${GIT_SHA}-
+          GIT_SHA=277707126815f84f1058a08518d94398d2e00674
+          TAG="${DATE}-arm64-custom-sso-di"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Login to Tencent Cloud Registry (for pulling private images)
+        uses: docker/login-action@v3
+        with:
+          registry: ai-copilot.tencentcloudcr.com
+          username: ${{ secrets.TENCENT_REGISTRY_USERNAME }}
+          password: ${{ secrets.TENCENT_REGISTRY_PASSWORD }}
+
+      - name: Login to tencentyun Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ccr.ccs.tencentyun.com
+          username: ${{ secrets.TENCENT_JIA_USERNAME }}
+          password: ${{ secrets.TENCENT_JIA_PASSWORD }}
+
+      - name: Set tencentyun image name
+        id: set_di_image_name
+        run: |
+          TAG="ccr.ccs.tencentyun.com/oviovi/keycloak:${{ steps.set_image_tag.outputs.tag }}"
+          echo "image_name=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build and push to tencentyun
+        uses: docker/build-push-action@v5
+        with:
+          context: arm
+          file: arm/Dockerfile
+          push: true
+          tags: ${{ steps.set_di_image_name.outputs.image_name }}
+          platforms: linux/arm64
+          provenance: false # 可选：关闭 SBOM 生成，加快构建
+
+      - name: Write tag to arm/tag_version_di.txt
+        run: |
+          echo "DI: ${{ steps.set_di_image_name.outputs.image_name }}" > arm/tag_version_di.txt
+          echo "Build Time: $(date '+%Y-%m-%d %H:%M:%S')" >> arm/tag_version_di.txt
+
+      - name: Commit and push version files to Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git pull origin main
+          git add arm/tag_version_di.txt
+          git add arm/md5_version_di.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update DI ARM image tag on $(date '+%Y-%m-%d %H:%M:%S')"
+            git push origin main
+          fi
